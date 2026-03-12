@@ -33,6 +33,7 @@ export default function App() {
   }, [showLastYear]);
 
   const quantitiesForCalc = useMemo(() => {
+    // showLastYear=false の時は直近4週だけで計算（昨年枠は完全に無視）
     const sliceLen = showLastYear ? 8 : 4;
     return qty.slice(0, sliceLen).map(toNumberOrZero);
   }, [qty, showLastYear]);
@@ -52,7 +53,11 @@ export default function App() {
     return calc.excluded.map(e => allLabels[e.index]);
   }, [calc.excluded, showLastYear]);
 
-  const onClearQuantities = () => setQty(["", "", "", "", "", "", "", ""]);
+  // ★修正ポイント：クリア時に「昨年入力欄」をOFFへ戻す
+  const onClearQuantities = () => {
+    setQty(["", "", "", "", "", "", "", ""]);
+    setShowLastYear(false); // ← これが効きます
+  };
 
   const levelLabel =
     serviceFactor === 1.65
@@ -150,7 +155,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* ROPは“注意”として枠線を強める（色は増やさず濃淡で） */}
           <div className="resultRow resultWarn">
             <div className="resultLabel">発注点（ROP）</div>
             <div className="resultValue">{round0(calc.reorderPoint)}</div>

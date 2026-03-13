@@ -5,6 +5,7 @@ export type CalcInput = {
   leadTime: number;      // 日（数値）
   orderInterval: number; // 日（数値）
   quantities: number[];  // 週次使用量（空欄は0に変換済）
+  useOutlierFilter?: boolean; // ★追加：外れ値除外 ON/OFF（未指定はON扱い）
 };
 
 function median(nums: number[]): number {
@@ -20,7 +21,7 @@ function mean(nums: number[]): number {
   return nums.reduce((s, x) => s + x, 0) / nums.length;
 }
 
-// 母標準偏差（÷n）。小標本でも暴れにくい
+// 母標準偏差（÷n）
 function stdDevPopulation(nums: number[]): number {
   if (nums.length === 0) return 0;
   const m = mean(nums);
@@ -29,7 +30,7 @@ function stdDevPopulation(nums: number[]): number {
 }
 
 /**
- * MADベースの外れ値除外（少数データに強い）
+ * MADベースの外れ値除外
  * modified z = 0.6745 * (x - median) / MAD
  * |z| > 3.5 を外れ値扱い
  */
@@ -44,7 +45,6 @@ export function removeOutliersMAD(values: number[], threshold = 3.5): {
   const mad = median(absDevs);
 
   if (mad === 0) {
-    // MAD=0（全部同じ等）なら外れ値判定できないので除外なし
     return { cleaned: values, excluded: [] };
   }
 
@@ -57,7 +57,6 @@ export function removeOutliersMAD(values: number[], threshold = 3.5): {
     else cleaned.push(v);
   });
 
-  // すべて除外になるのは困るので、その場合は元に戻す
   if (cleaned.length === 0) return { cleaned: values, excluded: [] };
 
   return { cleaned, excluded };
@@ -65,38 +64,34 @@ export function removeOutliersMAD(values: number[], threshold = 3.5): {
 
 /**
  * 計算仕様（B方式：週のブレ基準）
- * - 入力：週次使用量（4〜8点）
- * - LT/発注間隔：日
- * - 平均：単純平均（週）
- * - 安全在庫 = z × SD(週) × sqrt((LT+間隔)/7)
+ * - 安全在庫 = Z × SD(週) × sqrt((LT+間隔)/7)
  * - ROP = 平均日販 × LT(日) + 安全在庫
  * - 目標在庫（適正在庫）= ROP + 平均日販 × 発注間隔(日)
  */
 export function calcStock(input: CalcInput) {
   const { serviceFactor, leadTime, orderInterval, quantities } = input;
+  const useOutlierFilter = input.useOutlierFilter ?? true;
 
   const ltDays = Math.max(0, leadTime);
   const intervalDays = Math.max(0, orderInterval);
   const totalDays = ltDays + intervalDays;
-  const periodWeeks = totalDays / 7; // 日→週換算
+  const periodWeeks = totalDays / 7;
 
-  const { cleaned, excluded } = removeOutliersMAD(quantities);
+  const outlierResult = useOutlierFilter
+    ? removeOutliersMAD(quantities)
+    : { cleaned: quantities, excluded: [] as { index: number; value: number }[] };
 
-  // quantities は「週次使用量」
+  const cleaned = outlierResult.cleaned;
+  const excluded = outlierResult.excluded;
+
   const avgWeekly = mean(cleaned);
   const sdWeekly = stdDevPopulation(cleaned);
-
-  // 日販（ROP・目標在庫で使う）
   const avgDaily = avgWeekly / 7;
 
-  // B方式：週のブレで安全在庫を作る
   const safetyStock =
     periodWeeks <= 0 ? 0 : serviceFactor * sdWeekly * Math.sqrt(periodWeeks);
 
-  // 発注点（ROP）
   const reorderPoint = avgDaily * ltDays + safetyStock;
-
-  // 目標在庫（適正在庫として大きく表示）
   const targetStock = reorderPoint + avgDaily * intervalDays;
 
   return {

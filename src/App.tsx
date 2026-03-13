@@ -24,6 +24,10 @@ export default function App() {
   const [leadTime, setLeadTime] = useState<string>("");
   const [orderInterval, setOrderInterval] = useState<string>("");
   const [showLastYear, setShowLastYear] = useState(false);
+
+  // ★追加：外れ値除外 ON/OFF（デフォルトON）
+  const [outlierEnabled, setOutlierEnabled] = useState(true);
+
   const [qty, setQty] = useState<string[]>(["", "", "", "", "", "", "", ""]);
 
   const labels = useMemo(() => {
@@ -33,7 +37,6 @@ export default function App() {
   }, [showLastYear]);
 
   const quantitiesForCalc = useMemo(() => {
-    // showLastYear=false の時は直近4週だけで計算（昨年枠は完全に無視）
     const sliceLen = showLastYear ? 8 : 4;
     return qty.slice(0, sliceLen).map(toNumberOrZero);
   }, [qty, showLastYear]);
@@ -43,20 +46,21 @@ export default function App() {
       serviceFactor,
       leadTime: toNumberOrZero(leadTime),
       orderInterval: toNumberOrZero(orderInterval),
-      quantities: quantitiesForCalc
+      quantities: quantitiesForCalc,
+      useOutlierFilter: outlierEnabled
     });
-  }, [serviceFactor, leadTime, orderInterval, quantitiesForCalc]);
+  }, [serviceFactor, leadTime, orderInterval, quantitiesForCalc, outlierEnabled]);
 
   const excludedNames = useMemo(() => {
+    if (!outlierEnabled) return [];
     const sliceLen = showLastYear ? 8 : 4;
     const allLabels = [...LABELS_BASE, ...LABELS_LAST].slice(0, sliceLen);
     return calc.excluded.map(e => allLabels[e.index]);
-  }, [calc.excluded, showLastYear]);
+  }, [calc.excluded, showLastYear, outlierEnabled]);
 
-  // ★修正ポイント：クリア時に「昨年入力欄」をOFFへ戻す
   const onClearQuantities = () => {
     setQty(["", "", "", "", "", "", "", ""]);
-    setShowLastYear(false); // ← これが効きます
+    setShowLastYear(false);
   };
 
   const levelLabel =
@@ -66,9 +70,10 @@ export default function App() {
 
   return (
     <div className="page">
-      <header className="header">
-        <div className="title">適正在庫 計算</div>
-        <div className="subtitle">結論（適正在庫）を最優先表示</div>
+      <header className="header headerCenter">
+        {/* 修正：適正在庫 計算 → 適正在庫（センター） */}
+        <div className="title titleCenter">適正在庫</div>
+        {/* 削除：結論（適正在庫）を最優先表示（subtitle自体を出さない） */}
       </header>
 
       <section className="card">
@@ -111,13 +116,35 @@ export default function App() {
           </div>
         </div>
 
+        {/* ★追加：外れ値除外 ON/OFF */}
+        <div className="row">
+          <label className="label">外れ値除外</label>
+          <div className="toggleRow">
+            <button
+              type="button"
+              className={`toggleBtn ${outlierEnabled ? "toggleOn" : ""}`}
+              onClick={() => setOutlierEnabled(true)}
+            >
+              ON
+            </button>
+            <button
+              type="button"
+              className={`toggleBtn ${!outlierEnabled ? "toggleOn" : ""}`}
+              onClick={() => setOutlierEnabled(false)}
+            >
+              OFF
+            </button>
+          </div>
+        </div>
+
         <div className="actions">
           <button className="btn" onClick={() => setShowLastYear(v => !v)}>
             {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
           </button>
 
+          {/* 修正：売上数量を削除（クリア）→ 売上数量をクリア */}
           <button className="btn btnGhost" onClick={onClearQuantities}>
-            売上数量を削除（クリア）
+            売上数量をクリア
           </button>
         </div>
       </section>
@@ -174,7 +201,7 @@ export default function App() {
             標準偏差（週）：<b>{round1(calc.sdWeekly)}</b> / 期間：<b>{round1(calc.periodWeeks)}</b>週
           </div>
           <div className="metaLine">
-            外れ値除外：{excludedNames.length === 0 ? "なし" : excludedNames.join("、")}
+            外れ値除外：{outlierEnabled ? (excludedNames.length === 0 ? "なし" : excludedNames.join("、")) : "OFF"}
           </div>
           <div className="smallNote">
             ヒント：在庫が「発注点（ROP）」を下回ったら発注。発注後は「適正在庫（目標在庫）」を目安に補充量を調整。

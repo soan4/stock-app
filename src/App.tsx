@@ -25,7 +25,7 @@ export default function App() {
   const [orderInterval, setOrderInterval] = useState<string>("");
   const [showLastYear, setShowLastYear] = useState(false);
 
-  // ★追加：外れ値除外 ON/OFF（デフォルトON）
+  // 外れ値除外：デフォルトON
   const [outlierEnabled, setOutlierEnabled] = useState(true);
 
   const [qty, setQty] = useState<string[]>(["", "", "", "", "", "", "", ""]);
@@ -71,9 +71,7 @@ export default function App() {
   return (
     <div className="page">
       <header className="header headerCenter">
-        {/* 修正：適正在庫 計算 → 適正在庫（センター） */}
         <div className="title titleCenter">適正在庫</div>
-        {/* 削除：結論（適正在庫）を最優先表示（subtitle自体を出さない） */}
       </header>
 
       <section className="card">
@@ -116,23 +114,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* ★追加：外れ値除外 ON/OFF */}
+        {/* iOS風スイッチ */}
         <div className="row">
           <label className="label">外れ値除外</label>
-          <div className="toggleRow">
+          <div className="switchRow">
+            <span className="switchState">{outlierEnabled ? "ON" : "OFF"}</span>
+
             <button
               type="button"
-              className={`toggleBtn ${outlierEnabled ? "toggleOn" : ""}`}
-              onClick={() => setOutlierEnabled(true)}
+              className={`switch ${outlierEnabled ? "switchOn" : ""}`}
+              role="switch"
+              aria-checked={outlierEnabled}
+              onClick={() => setOutlierEnabled(v => !v)}
             >
-              ON
-            </button>
-            <button
-              type="button"
-              className={`toggleBtn ${!outlierEnabled ? "toggleOn" : ""}`}
-              onClick={() => setOutlierEnabled(false)}
-            >
-              OFF
+              <span className="switchThumb" />
             </button>
           </div>
         </div>
@@ -142,7 +137,6 @@ export default function App() {
             {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
           </button>
 
-          {/* 修正：売上数量を削除（クリア）→ 売上数量をクリア */}
           <button className="btn btnGhost" onClick={onClearQuantities}>
             売上数量をクリア
           </button>

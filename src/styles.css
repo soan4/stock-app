@@ -224,3 +224,56 @@ body{
   background: rgba(79,135,118,.09);
   color: var(--accent);
 }
+
+/* iOS風スイッチ（色は増やさず濃淡のみ） */
+.switchRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.switchState{
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  opacity: .9;
+}
+
+.switch{
+  width: 56px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(86,100,116,.22);
+  background: rgba(86,100,116,.10);
+  padding: 3px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.switchThumb{
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--bg);
+  box-shadow: 0 6px 16px rgba(86,100,116,.22);
+  transform: translateX(0);
+  transition: transform 160ms ease;
+}
+
+.switchOn{
+  border-color: rgba(79,135,118,.55);
+  background: rgba(79,135,118,.18);
+  justify-content: flex-end;
+}
+
+.switchOn .switchThumb{
+  transform: translateX(0);
+}
+
+/* タップ感 */
+.switch:active{
+  transform: scale(0.99);
+}

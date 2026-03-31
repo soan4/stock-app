@@ -71,7 +71,9 @@ export default function App() {
   return (
     <div className="page">
       <header className="header headerCenter">
-        <div className="title titleCenter">適正在庫</div>
+        <div className="titleLogoWrap">
+  <img src="/stock-app/logo.svg" alt="適正在庫" className="titleLogo" />
+</div>
       </header>
 
       {/* 設定カード（ここから「昨年追加」「クリア」ボタンは削除） */}

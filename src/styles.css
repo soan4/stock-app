@@ -303,3 +303,17 @@ body{
   text-align: center;
   white-space: normal;       /* 長い日本語は折り返してOK */
 }
+
+/* タイトルをロゴ表示に */
+.titleLogoWrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 6px 0 2px;
+}
+
+.titleLogo{
+  height: 34px;   /* ←ここでロゴの大きさ調整（おすすめ 28〜40px） */
+  width: auto;
+  display:block;
+}

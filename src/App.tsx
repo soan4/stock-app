@@ -74,6 +74,7 @@ export default function App() {
         <div className="title titleCenter">適正在庫</div>
       </header>
 
+      {/* 設定カード（ここから「昨年追加」「クリア」ボタンは削除） */}
       <section className="card">
         <div className="row">
           <label className="label">
@@ -131,18 +132,9 @@ export default function App() {
             </button>
           </div>
         </div>
-
-        <div className="actions">
-          <button className="btn" onClick={() => setShowLastYear(v => !v)}>
-            {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
-          </button>
-
-          <button className="btn btnGhost" onClick={onClearQuantities}>
-            売上数量をクリア
-          </button>
-        </div>
       </section>
 
+      {/* 売上入力カード */}
       <section className="card">
         <div className="sectionTitle">売上数量（週次）</div>
         <div className="inputs">
@@ -165,6 +157,18 @@ export default function App() {
         </div>
       </section>
 
+      {/* ★移動先：売上入力と計算結果の間にボタンを配置（順番は維持） */}
+      <div className="actions">
+        <button className="btn" onClick={() => setShowLastYear(v => !v)}>
+          {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
+        </button>
+
+        <button className="btn btnGhost" onClick={onClearQuantities}>
+          売上数量をクリア
+        </button>
+      </div>
+
+      {/* 計算結果カード */}
       <section className="card">
         <div className="sectionTitle">計算結果</div>
 

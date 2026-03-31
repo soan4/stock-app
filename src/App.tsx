@@ -158,7 +158,7 @@ export default function App() {
       </section>
 
       {/* ★移動先：売上入力と計算結果の間にボタンを配置（順番は維持） */}
-      <div className="actions">
+      <div className="actions actionsFill">
         <button className="btn" onClick={() => setShowLastYear(v => !v)}>
           {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
         </button>

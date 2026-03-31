@@ -286,3 +286,20 @@ body{
   border: 1px solid rgba(79,135,118,.45);
   background: rgba(79,135,118,.08);
 }
+
+/* 「昨年の売上データ入力を追加」「売上数量をクリア」を均等幅で横並び＆余白を埋める */
+.actionsFill{
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;         /* 1行固定 */
+}
+
+.actionsFill > .btn,
+.actionsFill > .btnGhost{
+  flex: 1 1 0;               /* 50:50に割り当て */
+  min-width: 0;              /* 押しつぶし対策 */
+  justify-content: center;
+  text-align: center;
+  white-space: normal;       /* 長い日本語は折り返してOK */
+}

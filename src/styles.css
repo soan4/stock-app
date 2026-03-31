@@ -313,7 +313,7 @@ body{
 }
 
 .titleLogo{
-  height: 34px;   /* ←ここでロゴの大きさ調整（おすすめ 28〜40px） */
+  height: 40px;   /* ←ここでロゴの大きさ調整（おすすめ 28〜40px） */
   width: auto;
   display:block;
 }

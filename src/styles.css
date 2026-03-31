@@ -277,3 +277,12 @@ body{
 .switch:active{
   transform: scale(0.99);
 }
+
+/* 外れ値除外が発生した時だけ目立たせる（色は増やさず濃淡＋太字） */
+.metaAlert{
+  font-weight: 800;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(79,135,118,.45);
+  background: rgba(79,135,118,.08);
+}

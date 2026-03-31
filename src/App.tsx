@@ -198,9 +198,10 @@ export default function App() {
           <div className="metaLine">
             標準偏差（週）：<b>{round1(calc.sdWeekly)}</b> / 期間：<b>{round1(calc.periodWeeks)}</b>週
           </div>
-          <div className="metaLine">
-            外れ値除外：{outlierEnabled ? (excludedNames.length === 0 ? "なし" : excludedNames.join("、")) : "OFF"}
-          </div>
+          <div className={`metaLine ${outlierEnabled && excludedNames.length > 0 ? "metaAlert" : ""}`}>
+  {outlierEnabled && excludedNames.length > 0 ? "⚠︎ " : ""}
+  外れ値除外：{outlierEnabled ? (excludedNames.length === 0 ? "なし" : excludedNames.join("、")) : "OFF"}
+</div>
           <div className="smallNote">
             ヒント：在庫が「発注点（ROP）」を下回ったら発注。発注後は「適正在庫（目標在庫）」を目安に補充量を調整。
           </div>

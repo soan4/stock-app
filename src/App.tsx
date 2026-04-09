@@ -12,11 +12,21 @@ function toNumberOrZero(s: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function toPositiveIntOrDefault(s: string, def: number): number {
+  const n = Math.floor(toNumberOrZero(s));
+  return n >= 1 ? n : def;
+}
+
 function round1(n: number) {
   return Math.round(n * 10) / 10;
 }
 function round0(n: number) {
   return Math.round(n);
+}
+
+function ceilToLot(value: number, lot: number): number {
+  if (lot <= 1) return value;
+  return Math.ceil(value / lot) * lot;
 }
 
 export default function App() {
@@ -27,6 +37,10 @@ export default function App() {
 
   // 外れ値除外：デフォルトON
   const [outlierEnabled, setOutlierEnabled] = useState(true);
+
+  // ★ロット：基本は非表示＆初期値1
+  const [showLot, setShowLot] = useState(false);
+  const [lotSize, setLotSize] = useState<string>("1");
 
   const [qty, setQty] = useState<string[]>(["", "", "", "", "", "", "", ""]);
 
@@ -68,15 +82,19 @@ export default function App() {
       ? { text: "Aランク:5%（1.65）", cls: "badge badgeA" }
       : { text: "Cランク:30%（0.53）", cls: "badge badgeC" };
 
+  // ロット丸め（目標在庫のみ）
+  const lot = useMemo(() => toPositiveIntOrDefault(lotSize, 1), [lotSize]);
+  const targetRaw = calc.targetStock;
+  const targetRounded = ceilToLot(targetRaw, lot);
+  const showLotAdjusted = lot > 1 && Number.isFinite(targetRaw);
+
   return (
     <div className="page">
       <header className="header headerCenter">
-        <div className="titleLogoWrap">
-  <img src="/stock-app/logo.svg" alt="適正在庫" className="titleLogo" />
-</div>
+        <div className="title titleCenter">適正在庫</div>
       </header>
 
-      {/* 設定カード（ここから「昨年追加」「クリア」ボタンは削除） */}
+      {/* 設定カード */}
       <section className="card">
         <div className="row">
           <label className="label">
@@ -115,6 +133,35 @@ export default function App() {
               onChange={(e) => setOrderInterval(e.target.value)}
             />
           </div>
+        </div>
+
+        {/* ★ロット折りたたみ（基本は非表示） */}
+        <div className="row">
+          <button
+            type="button"
+            className="collapseHeader"
+            aria-expanded={showLot}
+            onClick={() => setShowLot(v => !v)}
+          >
+            <span>ロット設定（任意）</span>
+            <span className={`chev ${showLot ? "chevOpen" : ""}`}>›</span>
+          </button>
+
+          {showLot && (
+            <div className="collapseBody">
+              <label className="label">最小発注単位（ロット）（個）</label>
+              <input
+                className="input"
+                inputMode="numeric"
+                placeholder="例：10（10個単位）"
+                value={lotSize}
+                onChange={(e) => setLotSize(e.target.value)}
+              />
+              <div className="smallNote">
+                ロット=1 は丸めなし（通常）。ロット&gt;1 の場合、適正在庫（目標在庫）をロット単位で切り上げ表示します。
+              </div>
+            </div>
+          )}
         </div>
 
         {/* iOS風スイッチ */}
@@ -159,7 +206,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ★移動先：売上入力と計算結果の間にボタンを配置（順番は維持） */}
+      {/* 売上入力と計算結果の間のボタン */}
       <div className="actions actionsFill">
         <button className="btn" onClick={() => setShowLastYear(v => !v)}>
           {showLastYear ? "昨年データ入力欄を隠す" : "昨年の売上データ入力を追加"}
@@ -178,8 +225,14 @@ export default function App() {
           <div className="hero">
             <div className="heroTop">
               <div className="heroLabel">適正在庫（目標在庫）</div>
-              <div className="heroNumber">{round0(calc.targetStock)}</div>
+              <div className="heroNumber">{round0(showLotAdjusted ? targetRounded : targetRaw)}</div>
             </div>
+
+            {showLotAdjusted && (
+              <div className="smallNote">
+                ロット調整：{lot}個単位（元の計算値：{round0(targetRaw)}）
+              </div>
+            )}
           </div>
 
           <div className="resultRow resultWarn">
@@ -200,10 +253,12 @@ export default function App() {
           <div className="metaLine">
             標準偏差（週）：<b>{round1(calc.sdWeekly)}</b> / 期間：<b>{round1(calc.periodWeeks)}</b>週
           </div>
+
           <div className={`metaLine ${outlierEnabled && excludedNames.length > 0 ? "metaAlert" : ""}`}>
-  {outlierEnabled && excludedNames.length > 0 ? "⚠︎ " : ""}
-  外れ値除外：{outlierEnabled ? (excludedNames.length === 0 ? "なし" : excludedNames.join("、")) : "OFF"}
-</div>
+            {outlierEnabled && excludedNames.length > 0 ? "⚠︎ " : ""}
+            外れ値除外：{outlierEnabled ? (excludedNames.length === 0 ? "なし" : excludedNames.join("、")) : "OFF"}
+          </div>
+
           <div className="smallNote">
             ヒント：在庫が「発注点（ROP）」を下回ったら発注。発注後は「適正在庫（目標在庫）」を目安に補充量を調整。
           </div>

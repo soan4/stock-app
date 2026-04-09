@@ -38,7 +38,7 @@ export default function App() {
   // 外れ値除外：デフォルトON
   const [outlierEnabled, setOutlierEnabled] = useState(true);
 
-  // ★ロット：基本は非表示＆初期値1
+  // ロット：基本は非表示＆初期値1
   const [showLot, setShowLot] = useState(false);
   const [lotSize, setLotSize] = useState<string>("1");
 
@@ -75,6 +75,9 @@ export default function App() {
   const onClearQuantities = () => {
     setQty(["", "", "", "", "", "", "", ""]);
     setShowLastYear(false);
+
+    // ★要望：クリア時にロットを初期値=1へ戻す
+    setLotSize("1");
   };
 
   const levelLabel =
@@ -96,6 +99,7 @@ export default function App() {
 
       {/* 設定カード */}
       <section className="card">
+        {/* 安全係数 */}
         <div className="row">
           <label className="label">
             安全係数（サービス水準）
@@ -111,6 +115,44 @@ export default function App() {
           </select>
         </div>
 
+        {/* ★移動：ロット欄（安全係数の下 / リードタイムの上） */}
+        <div className="row">
+          <button
+            type="button"
+            className="collapseHeader"
+            aria-expanded={showLot}
+            onClick={() => setShowLot(v => !v)}
+          >
+            <span>ロット設定（任意）</span>
+            <span className={`chev ${showLot ? "chevOpen" : ""}`}>›</span>
+          </button>
+
+          {showLot && (
+            <div className="collapseBody">
+              <label className="label">最小発注単位（ロット）（個）</label>
+              <input
+                className="input"
+                inputMode="numeric"
+                placeholder="例：10（10個単位）"
+                value={lotSize}
+                // ★要望：入力欄をタッチしたら「1」を消す
+                onFocus={() => {
+                  if (lotSize.trim() === "1") setLotSize("");
+                }}
+                // ★空欄のまま離れたら1に戻す（事故防止）
+                onBlur={() => {
+                  if (lotSize.trim() === "") setLotSize("1");
+                }}
+                onChange={(e) => setLotSize(e.target.value)}
+              />
+              <div className="smallNote">
+                ロット=1 は丸めなし（通常）。ロット&gt;1 の場合、適正在庫（目標在庫）をロット単位で切り上げ表示します。
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* リードタイム・発注間隔 */}
         <div className="grid2">
           <div className="row">
             <label className="label">発注リードタイム（日）</label>
@@ -135,36 +177,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* ★ロット折りたたみ（基本は非表示） */}
-        <div className="row">
-          <button
-            type="button"
-            className="collapseHeader"
-            aria-expanded={showLot}
-            onClick={() => setShowLot(v => !v)}
-          >
-            <span>ロット設定（任意）</span>
-            <span className={`chev ${showLot ? "chevOpen" : ""}`}>›</span>
-          </button>
-
-          {showLot && (
-            <div className="collapseBody">
-              <label className="label">最小発注単位（ロット）（個）</label>
-              <input
-                className="input"
-                inputMode="numeric"
-                placeholder="例：10（10個単位）"
-                value={lotSize}
-                onChange={(e) => setLotSize(e.target.value)}
-              />
-              <div className="smallNote">
-                ロット=1 は丸めなし（通常）。ロット&gt;1 の場合、適正在庫（目標在庫）をロット単位で切り上げ表示します。
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* iOS風スイッチ */}
+        {/* 外れ値除外スイッチ */}
         <div className="row">
           <label className="label">外れ値除外</label>
           <div className="switchRow">

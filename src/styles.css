@@ -349,3 +349,17 @@ body{
 .collapseBody{
   margin-top: 10px;
 }
+
+/* タイトルをロゴ表示に */
+.titleLogoWrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 6px 0 2px;
+}
+
+.titleLogo{
+  height: 38px;   /* ←指定どおり 38px */
+  width: auto;
+  display:block;
+}

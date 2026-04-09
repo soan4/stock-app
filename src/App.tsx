@@ -94,8 +94,14 @@ export default function App() {
   return (
     <div className="page">
       <header className="header headerCenter">
-        <div className="title titleCenter">適正在庫</div>
-      </header>
+  <div className="titleLogoWrap">
+    <img
+      src={`${import.meta.env.BASE_URL}logo.svg`}
+      alt="適正在庫"
+      className="titleLogo"
+    />
+  </div>
+</header>
 
       {/* 設定カード */}
       <section className="card">
